@@ -1,18 +1,9 @@
-# Phaser Webpack Template
+This version of the ultimate game parts template was built upon the phaser 3 project template by Richard Davey
 
-This is a Phaser 3 project template that uses webpack for bundling. It supports hot-reloading for quick development workflow and includes scripts to generate production-ready builds.
 
-**[This Template is also available as a TypeScript version.](https://github.com/phaserjs/template-webpack-ts)**
+https://github.com/photonstorm/phaser3-project-template
 
-### Versions
-
-This template has been updated for:
-
-- [Phaser 3.80.1](https://github.com/phaserjs/phaser)
-- [Webpack 5.91.0](https://github.com/webpack/webpack)
-
-![screenshot](screenshot.png)
-
+The following comments are taken from the documentation from the phaser3 project template
 ## Requirements
 
 [Node.js](https://nodejs.org) is required to install dependencies and run scripts via `npm`.
@@ -22,92 +13,98 @@ This template has been updated for:
 | Command | Description |
 |---------|-------------|
 | `npm install` | Install project dependencies |
-| `npm run dev` | Launch a development web server |
-| `npm run build` | Create a production build in the `dist` folder |
+| `npm start` | Build project and open web server running project |
+| `npm run build` | Builds code bundle with production settings (minification, uglification, etc..) |
 
 ## Writing Code
 
-After cloning the repo, run `npm install` from your project directory. Then, you can start the local development server by running `npm run dev`.
+After cloning the repo, run `npm install` from your project directory. Then, you can start the local development
+server by running `npm start`.
 
-The local development server runs on `http://localhost:8080` by default. Please see the webpack documentation if you wish to change this, or add SSL support.
 
-Once the server is running you can edit any of the files in the `src` folder. Webpack will automatically recompile your code and then reload the browser.
+After starting the development server with `npm start`, you can edit any files in the `src` folder
+and webpack will automatically recompile and reload your server (available at `http://localhost:8080`
+by default).
 
-## Template Project Structure
 
-We have provided a default project structure to get you started. This is as follows:
+## Deploying Code
+After you run the `npm run build` command, your code will be built into a single bundle located at 
+`dist/bundle.min.js` along with any other assets you project depended. 
 
-- `index.html` - A basic HTML page to contain the game.
-- `src` - Contains the game source code.
-- `src/main.js` - The main entry point. This contains the game configuration and starts the game.
-- `src/scenes/` - The Phaser Scenes are in this folder.
-- `public/style.css` - Some simple CSS rules to help with page layout.
-- `public/assets` - Contains the static assets used by the game.
+If you put the contents of the `dist` folder in a publicly-accessible location (say something like `http://mycoolserver.com`), 
+you should be able to open `http://mycoolserver.com/index.html` and play your game.
+"# phaser-ultimate-template" 
 
-## Handling Assets
+## Setting up a scene
 
-Webpack supports loading assets via JavaScript module `import` statements.
+Most of the common functions are found inside the baseScene class. You make scenes that extend this class to have access to those functions
+```javascript
+export class SceneMain extends BaseScene {
+    constructor() {
+        super('SceneMain');
+    }
+    preload() {}
+    create() {
 
-This template provides support for both embedding assets and also loading them from a static folder. To embed an asset, you can import it at the top of the JavaScript file you are using it in:
+        //set up the base scene
+        super.create();
 
-```js
-import logoImg from './assets/logo.png'
+      }
+      update(){ }
+
+      }
 ```
 
-To load static files such as audio files, videos, etc place them into the `public/assets` folder. Then you can use this path in the Loader calls within Phaser:
+## Setting up an align grid
 
-```js
-preload ()
-{
-    //  This is an example of an imported bundled image.
-    //  Remember to import it at the top of this file
-    this.load.image('logo', logoImg);
+This project works by placing game objects on a grid that scales with a dynamically sized canvas.
 
-    //  This is an example of loading a static image
-    //  from the public/assets folder:
-    this.load.image('background', 'assets/bg.png');
-}
+You can do this inside any scene that extends baseScene
+```javascript
+create() {
+
+        //set up the base scene
+        super.create();
+
+        //set the grid for the scene
+        this.makeAlignGrid(11, 11);
+
+        //show numbers for layout and debugging 
+        this.aGrid.showNumbers();
+
+
+      }
 ```
+## Adding Images
 
-When you issue the `npm run build` command, all static assets are automatically copied to the `dist/assets` folder.
+Use placeImage to add an image on the grid and scale it.
 
-## Deploying to Production
+### Usage 
 
-After you run the `npm run build` command, your code will be built into a single bundle and saved to the `dist` folder, along with any other assets your project imported, or stored in the public assets folder.
+this.placeImage(key,grid_number,percentage_of_screen_width)
 
-In order to deploy your game, you will need to upload *all* of the contents of the `dist` folder to a public facing web server.
+### Example 
 
-## Customizing the Template
+this.placeImage("face",60,.25);
 
-### Babel
+## Adding Text
 
-You can write modern ES6+ JavaScript and Babel will transpile it to a version of JavaScript that you want your project to support. The targeted browsers are set in the `.babelrc` file and the default currently targets all browsers with total usage over "0.25%" but excludes IE11 and Opera Mini.
+You can place text on the grid by using placeText.
 
- ```
-"browsers": [
-  ">0.25%",
-  "not ie 11",
-  "not op_mini all"
-]
- ```
+### Usage
 
-### Webpack
+this.placeText(text,grid_number,text_style);
 
-If you want to customize your build, such as adding a new webpack loader or plugin (i.e. for loading CSS or fonts), you can modify the `webpack/config.js` file for cross-project changes, or you can modify and/or create new configuration files and target them in specific npm tasks inside of `package.json`. Please see the [Webpack documentation](https://webpack.js.org/) for more information.
+### Example
 
-## Join the Phaser Community!
+this.placeText("Game Title",27,"TITLE_TEXT");
 
-We love to see what developers like you create with Phaser! It really motivates us to keep improving. So please join our community and show-off your work 😄
+## Adding Reusable Text Styles
 
-**Visit:** The [Phaser website](https://phaser.io) and follow on [Phaser Twitter](https://twitter.com/phaser_)<br />
-**Play:** Some of the amazing games [#madewithphaser](https://twitter.com/search?q=%23madewithphaser&src=typed_query&f=live)<br />
-**Learn:** [API Docs](https://newdocs.phaser.io), [Support Forum](https://phaser.discourse.group/) and [StackOverflow](https://stackoverflow.com/questions/tagged/phaser-framework)<br />
-**Discord:** Join us on [Discord](https://discord.gg/phaser)<br />
-**Code:** 2000+ [Examples](https://labs.phaser.io)<br />
-**Read:** The [Phaser World](https://phaser.io/community/newsletter) Newsletter<br />
+### Usage
 
-Created by [Phaser Studio](mailto:support@phaser.io). Powered by coffee, anime, pixels and love.
+this.textStyles.regSimple(key, color, fontSize, font);
 
-The Phaser logo and characters are &copy; 2011 - 2024 Phaser Studio Inc.
+### Example
 
-All rights reserved.
+this.textStyles.regSimple("SCORE", "#ffff00", TextStyles.SIZE_LARGE, "Impact");
