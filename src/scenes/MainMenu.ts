@@ -1,6 +1,5 @@
 import { Scene, GameObjects } from 'phaser';
 import { AlignGrid } from '../common/util/AlignGrid';
-
 export class MainMenu extends Scene
 {
     background: GameObjects.Image;
