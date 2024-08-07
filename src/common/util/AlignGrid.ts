@@ -1,3 +1,6 @@
+import { TypeableText } from "../../myObjects/TypeableText";
+
+
 export class AlignGrid {
     
     
@@ -54,6 +57,11 @@ export class AlignGrid {
         var xx = index - (yy * this.cols);
        return this.placeAt(xx, yy, obj);
     }
+    placeTypeableTextAtIndex(index:number,typeableText:TypeableText){
+        this.placeAtIndex(index, typeableText.getChildren()[0]);
+        typeableText.centerWord();
+    }
+   
     showNumbers() {
         this.show();
         var count = 0;
