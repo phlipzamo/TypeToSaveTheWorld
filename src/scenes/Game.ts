@@ -1,10 +1,15 @@
 import { Scene } from 'phaser';
+import { AlignGrid } from '../common/util/AlignGrid';
+import { TypeableAstroid } from '../myObjects/TypeableAstroid';
 
 export class Game extends Scene
 {
     camera: Phaser.Cameras.Scene2D.Camera;
-    background: Phaser.GameObjects.Image;
+    earth: Phaser.GameObjects.Image;
     msg_text : Phaser.GameObjects.Text;
+    aGrid: AlignGrid;
+    astroid: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+    typeableAstroid: TypeableAstroid;
 
     constructor ()
     {
@@ -13,23 +18,32 @@ export class Game extends Scene
 
     create ()
     {
+        this.aGrid = new AlignGrid(this, 5,5)
         this.camera = this.cameras.main;
-        this.camera.setBackgroundColor(0x00ff00);
-
-        this.background = this.add.image(512, 384, 'background');
-        this.background.setAlpha(0.5);
-
-        this.msg_text = this.add.text(512, 384, 'Make something fun!\nand share it with us:\nsupport@phaser.io', {
-            fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 8,
-            align: 'center'
+        this.camera.setBackgroundColor(0x000000);
+        this.typeableAstroid= new TypeableAstroid(this, 0,0,"hello",30)
+        var indexPos = this.aGrid.getPosByIndex(2);
+        this.typeableAstroid.move(indexPos.x, indexPos.y);
+        //this.astroid=this.physics.add.sprite(10,10,"astroid");
+        //this.aGrid.placeAtIndex(2,this.astroid);
+        this.earth = this.add.image(0, 0, 'earth');
+        this.aGrid.placeAtIndex(22, this.earth);
+        this.earth.setScale(19);
+        this.earth.y+=this.earth.displayHeight/3;
+        this.anims.create({
+            key: 'stop',
+            frames: this.anims.generateFrameNames('astroid', {start: 1, end: 1, zeroPad: 1, prefix: 'A', suffix: '.png'}),
+            frameRate: 8,
+            repeat: 0
         });
-        this.msg_text.setOrigin(0.5);
-
-        this.input.once('pointerdown', () => {
-
-            this.scene.start('GameOver');
-
+        this.anims.create({
+            key: 'Explode',
+            frames: this.anims.generateFrameNames('astroid', {start: 1, end: 13, zeroPad: 1, prefix: 'A', suffix: '.png'}),
+            frameRate: 16,
+            repeat: 0
         });
+    }
+    update() {
+        this.typeableAstroid.moveDown(1);
     }
 }
