@@ -11,7 +11,7 @@ export class Game extends Scene
     astroid: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
     typeableAstroid: TypeableAstroid;
     groupOfAstroids: Phaser.GameObjects.Group;
-
+    words:string[]
     constructor ()
     {
         super('Game');
@@ -26,9 +26,8 @@ export class Game extends Scene
         
         this.createAnimations();
         this.groupOfAstroids = this.add.group();
-        this.groupOfAstroids.add(this.createAndPlaceTypeableAstroid("hello", 2));
-        this.groupOfAstroids.add(this.createAndPlaceTypeableAstroid("josie", 1));
-        
+        this.words = this.cache.json.get("twoLetterWords");
+        this.groupOfAstroids.add(this.createAndPlaceTypeableAstroid(this.words[this.getRandomNumber(0,this.words.length)].toLowerCase(), 2));
 
         if(!this.input.keyboard){return}
         this.input.keyboard.on('keydown', (keyPressed:any) => {
@@ -43,8 +42,13 @@ export class Game extends Scene
                 if(typeableAstroid.typeableText.getFirstAlive().text===keyPressed.key){
                     typeableAstroid.typeableText.getFirstAlive().setTyped(true);
                     if(!typeableAstroid.typeableText.getFirstAlive()){
+                        var newWord:string= this.words[this.getRandomNumber(0,this.words.length)];
+                        while(newWord[0]===typeableAstroid.startLetter.toUpperCase()){
+                            newWord = this.words[this.getRandomNumber(0,this.words.length)];
+                        }
                         typeableAstroid.setVisible(false);
                         typeableAstroid.destroy(false);
+                        this.groupOfAstroids.add(this.createAndPlaceTypeableAstroid(newWord.toLowerCase(), this.getRandomNumber(0,5)));
                     }
                 }
             }
@@ -94,5 +98,11 @@ export class Game extends Scene
             frameRate: 16,
             repeat: 0
         });
+    }
+    getRandomNumber(min:number, max:number):number {
+        const minCeiled = Math.ceil(min);
+        const maxFloored = Math.floor(max);
+        return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); 
+        // The maximum is exclusive and the minimum is inclusive  
     }
 }
