@@ -5,13 +5,13 @@ import { TypeableAstroid } from '../myObjects/TypeableAstroid';
 export class Game extends Scene
 {
     camera: Phaser.Cameras.Scene2D.Camera;
-    earth: Phaser.GameObjects.Image;
     msg_text : Phaser.GameObjects.Text;
     aGrid: AlignGrid;
     astroid: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
     typeableAstroid: TypeableAstroid;
-    groupOfAstroids: Phaser.GameObjects.Group;
     words:string[]
+    groupOfAstroids: Phaser.GameObjects.Group;
+    earth: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
     constructor ()
     {
         super('Game');
@@ -28,7 +28,7 @@ export class Game extends Scene
         this.groupOfAstroids = this.add.group();
         this.words = this.cache.json.get("twoLetterWords");
         this.groupOfAstroids.add(this.createAndPlaceTypeableAstroid(this.words[this.getRandomNumber(0,this.words.length)].toLowerCase(), 2));
-
+        //TODO Clean this up, make a it clear what you are doing
         if(!this.input.keyboard){return}
         this.input.keyboard.on('keydown', (keyPressed:any) => {
             const typeableAstroid = <TypeableAstroid> this.groupOfAstroids.getChildren()
@@ -48,7 +48,13 @@ export class Game extends Scene
                         }
                         typeableAstroid.setVisible(false);
                         typeableAstroid.destroy(false);
-                        this.groupOfAstroids.add(this.createAndPlaceTypeableAstroid(newWord.toLowerCase(), this.getRandomNumber(0,5)));
+                        var newTypeableAstroid:TypeableAstroid = this.createAndPlaceTypeableAstroid(newWord.toLowerCase(), this.getRandomNumber(0,5));
+                        this.groupOfAstroids.add(newTypeableAstroid);
+                        this.physics.add.overlap(newTypeableAstroid.astroid, this.earth, () =>
+                            {
+                                this.scene.start('GameOver');
+                            }
+                        );
                     }
                 }
             }
@@ -62,10 +68,19 @@ export class Game extends Scene
                 if(typeableAstroid){
                     typeableAstroid.typeableText.getFirstAlive().setTyped(true);
                     typeableAstroid.setBeingTyped(true);
-                }
-                
+                }     
             }
-        });           
+        });   
+        this.groupOfAstroids.getChildren().forEach((child)=>{
+                var typeableAstroid:TypeableAstroid= <TypeableAstroid> child;
+                this.physics.add.overlap(typeableAstroid.astroid, this.earth, () =>
+                    {
+                        this.scene.start('GameOver');
+                    }
+                ); 
+            }
+        );
+               
     }
     update() {
         this.groupOfAstroids.getChildren().forEach((child)=>{

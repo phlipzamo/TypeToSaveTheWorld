@@ -15,6 +15,7 @@ export class TypeableAstroid extends Phaser.GameObjects.GameObject{
         this.typeableText = new TypeableText(scene,x,y,text,fontsize);
         this.startLetter = text[0];
         this.beingTyped= false;
+           
     }
     moveDown(speed:number){
         this.move(this.x, this.y+speed)
