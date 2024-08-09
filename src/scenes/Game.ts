@@ -149,15 +149,14 @@ export class Game extends Scene
         return newWord;
     }
     addNewTypeableAstroidToScene(){
-        //check if placing in same col as last astroid
+        //check if placing in same col or adjacent col as last astroid
         if(!this.lastIndex){
             this.lastIndex = this.getRandomNumber(1,14);
         }
         do{
             this.newIndex = this.getRandomNumber(1,14);
-        }while(this.lastIndex===this.newIndex)
+        }while(Math.abs(this.lastIndex-this.newIndex)<=1)
         this.lastIndex = this.newIndex;
-
         //add word
         var newTypeableAstroid:TypeableAstroid = this.createAndPlaceTypeableAstroid(this.findNewWord(), this.newIndex, SPEED.SLOW);
         this.groupOfAstroids.add(newTypeableAstroid);
@@ -175,12 +174,23 @@ export class Game extends Scene
         if(this.startTime!=0){
             this.endTime = Date.now();
         }
-        var totalTimeinMin = ((this.endTime-this.startTime)/1000)/60;
-        (totalTimeinMin===0)?totalTimeinMin=1:totalTimeinMin;
-        localStorage.setItem("time", 'Total Time(min): '+totalTimeinMin);
+        var totalTimeInMilliseconds = this.endTime-this.startTime;
+        (totalTimeInMilliseconds===0)?totalTimeInMilliseconds=1:totalTimeInMilliseconds;
+        localStorage.setItem("time", "Time: "+this.millisecondsToFormattedMinString(totalTimeInMilliseconds) );
 
-        var grossWPM = (this.numOfRightKeyPressed/5)/totalTimeinMin;
+        var grossWPM = (this.numOfRightKeyPressed/5)/(this.millisecondsToMin(totalTimeInMilliseconds));
         localStorage.setItem("wpm", "WPM: "+Math.round(grossWPM));
     }
+    millisecondsToFormattedMinString(milliseconds:number) {
+        const seconds = milliseconds/1000
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = Math.floor(seconds % 60);
+      
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+    millisecondsToMin(milliseconds:number){
+        return ((milliseconds/1000)/60);
+    }
+    
     
 }
