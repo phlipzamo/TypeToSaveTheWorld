@@ -30,40 +30,40 @@ export class Game extends Scene
         this.numOfKeyPressed=0;
         this.startTime = 0;
         this.endTime =0;
+        this.kills = 0;
+        this.groupOfAstroids = this.add.group();
         this.aGrid = new AlignGrid(this, 5,15);
-        //this.aGrid.showNumbers();
         this.camera = this.cameras.main;
         this.camera.setBackgroundColor(0x000000);
-        this.createAndPlaceEarth()
-        this.kills = 0;
+        this.createAndPlaceEarth(67)
         this.createAnimations();
-        this.groupOfAstroids = this.add.group();
         this.words = this.cache.json.get("words");
         this.lettersInUse=[];
         this.addNewTypeableAstroidToScene();
-        //TODO Clean this up, make a it clear what you are doing
+
         if(!this.input.keyboard){return}
         this.input.keyboard.on('keydown', (keyPressed:any) => {
-            this.numOfKeyPressed++;
-            if(this.startTime===0){
-                this.startTime = Date.now();
-            }
-            const typeableAstroid = <TypeableAstroid> this.groupOfAstroids.getChildren()
+            //startTime if hasnt been started
+            if(this.startTime===0){this.startTime = Date.now();}
+
+            //find typed astroid
+            const astroidBeingTyped = <TypeableAstroid> this.groupOfAstroids.getChildren()
                 .find((child)=>{
                     var typeableAstroid:TypeableAstroid= <TypeableAstroid> child;
                     return typeableAstroid.beingTyped===true;
                 }
             );
-            if(typeableAstroid){
-                if(!typeableAstroid.typeableText.getFirstAlive()){return}
-                if(typeableAstroid.typeableText.getFirstAlive().text===keyPressed.key){
+            if(astroidBeingTyped){
+                if(!astroidBeingTyped.typeableText.hasUntypedLetters()){return}
+                if(astroidBeingTyped.typeableText.isNextUntypedLetter(keyPressed.key)){
                     this.numOfRightKeyPressed++;
-                    typeableAstroid.typeableText.getFirstAlive().setTyped(true);
-                    if(!typeableAstroid.typeableText.getFirstAlive()){
-                        this.removeAstroid(typeableAstroid)
-                        this.kills++;
+                    astroidBeingTyped.typeableText.typeNextLetter(true);
+                    //check if that was the last letter
+                    if(!astroidBeingTyped.typeableText.hasUntypedLetters()){
+                        this.kills++
+                        this.removeAstroid(astroidBeingTyped)
                         this.addNewTypeableAstroidToScene();
-                        if(this.kills===10){
+                        if(this.kills===30){
                             this.increaseDifficulty();
                             this.kills=0;
                         }
@@ -71,20 +71,19 @@ export class Game extends Scene
                 }
             }
             else{
-                const typeableAstroid = <TypeableAstroid> this.groupOfAstroids.getChildren()
+                //find astroid to start typing 
+                const astroidToStartTyping = <TypeableAstroid> this.groupOfAstroids.getChildren()
                     .find((child)=>{
                         var typeableAstroid:TypeableAstroid= <TypeableAstroid> child;
                         return typeableAstroid.startLetter === keyPressed.key;
                     }
                 );
-                if(typeableAstroid){
-                    typeableAstroid.typeableText.getFirstAlive().setTyped(true);
-                    typeableAstroid.setBeingTyped(true);
+                if(astroidToStartTyping){
+                    astroidToStartTyping.typeableText.typeNextLetter(true);
+                    astroidToStartTyping.setBeingTyped(true);
                 }     
             }
-        });   
-        
-               
+        });         
     }
     update() {
        this.groupOfAstroids.getChildren().forEach((child)=>{
@@ -92,17 +91,16 @@ export class Game extends Scene
            typeableAstroid.moveDown();
         });
     }
-    createAndPlaceEarth(){
+    createAndPlaceEarth(gridIndex: number){
         this.earth = this.physics.add.sprite(0, 0, 'earth');
-        this.aGrid.placeAtIndex(67, this.earth);
+        this.aGrid.placeAtIndex(gridIndex, this.earth);
         this.earth.setScale(19);
-
         this.earth.body.setCircle(30,1,4);
         this.earth.y+=this.earth.displayHeight/3;
     }
-    createAndPlaceTypeableAstroid(text:string,index:number, speed:SPEED):TypeableAstroid{
+    createAndPlaceTypeableAstroid(text:string,gridIndex:number, speed:SPEED):TypeableAstroid{
         var typeableAstroid= new TypeableAstroid(this, 0,0,text,30,speed)
-        var indexPos = this.aGrid.getPosByIndex(index);
+        var indexPos = this.aGrid.getPosByIndex(gridIndex);
         typeableAstroid.move(indexPos.x, indexPos.y);
         return typeableAstroid;
     }
@@ -130,18 +128,18 @@ export class Game extends Scene
         this.addNewTypeableAstroidToScene();
     }
     removeAstroid(typeableAstroid:TypeableAstroid){
+
         // find and remove letter from array
         const indexToRemove = this.lettersInUse.findIndex(letter => letter === typeableAstroid.startLetter);
         if (indexToRemove !== -1) {
           this.lettersInUse.splice(indexToRemove, 1);
         }
-        //destory and hide
+
         typeableAstroid.setVisible(false);
         typeableAstroid.destroy(false);
     }
     findNewWord():string{
-       
-        //look for new word with different starting letter
+        //look for new word with different starting letter than the other words in scene
         var newWord:string
         do{
             newWord = this.words[this.getRandomNumber(0,this.words.length)].toLowerCase();
@@ -178,9 +176,7 @@ export class Game extends Scene
             this.endTime = Date.now();
         }
         var totalTimeinMin = ((this.endTime-this.startTime)/1000)/60;
-        if(totalTimeinMin===0){
-            totalTimeinMin = 1;
-        }
+        (totalTimeinMin===0)?totalTimeinMin=1:totalTimeinMin;
         localStorage.setItem("time", 'Total Time(min): '+totalTimeinMin);
 
         var grossWPM = (this.numOfRightKeyPressed/5)/totalTimeinMin;

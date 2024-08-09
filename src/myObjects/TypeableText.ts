@@ -8,7 +8,6 @@ export class TypeableText extends Phaser.GameObjects.Group{
 
     constructor(scene:Phaser.Scene,x:number, y:number,text:string,fontsize:number){
         super(scene);
-        //dvar tempX=x
         
         for (let i = 0; i < text.length; i++) {
             var letter = new Letter(scene,x,y,text[i],fontsize)
@@ -17,10 +16,9 @@ export class TypeableText extends Phaser.GameObjects.Group{
             this.width += letter.width+2
             this.height=letter.height;
         };
-        
         scene.add.existing(this);
-        //scene.physics.world.enableBody(this);
     }
+    
     spaceOutLetters(){ 
         var letterBeforeWidth =0;
         var letterBeforeX =0;
@@ -74,6 +72,15 @@ export class TypeableText extends Phaser.GameObjects.Group{
         letter.x =x;
         letter.y=y;
         this.centerWord();
+    }
+    isNextUntypedLetter(letter: string){
+        return this.getFirstAlive().text===letter
+    }
+    hasUntypedLetters():boolean{
+        return this.getFirstAlive();
+    }
+    typeNextLetter(bool:boolean){
+        this.getFirstAlive().setTyped(bool);
     }
     
     
