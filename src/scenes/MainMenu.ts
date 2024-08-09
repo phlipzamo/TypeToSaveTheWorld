@@ -16,14 +16,10 @@ export class MainMenu extends Scene
 
     create ()
     {
-        //this.startText = new TypeText(this,"start");
         this.aGrid = new AlignGrid(this, 5,5)
-        //this.aGrid.showNumbers();
         this.background = this.add.image(512, 384, 'background');
         this.earth = this.add.sprite(0, 0, 'earth');
         this.aGrid.placeAtIndex(12, this.earth);
-        //this.aGrid.showNumbers();
-        //this.logo = this.add.image(512, 300, 'logo');
         this.earth.setScale(10);
         this.title = this.add.text(512, 460, 'TYPE TO SAVE THE WORLD', {
             fontFamily: 'Arial Black', fontSize: 54, color: '#ffffff',
@@ -31,11 +27,9 @@ export class MainMenu extends Scene
             align: 'center'
         }).setOrigin(0.5);
         this.aGrid.placeAtIndex(7,this.title);
-        //this.aGrid.showNumbers();
         this.startText = new TypeableText(this,0,0,"start",50);
       
         this.aGrid.placeTypeableTextAtIndex(17,this.startText);
-        //this.startText.x -= this.startText.width/2
         if(!this.input.keyboard){return}
         this.input.keyboard.on('keydown', (keyPressed:any) => {
             if(!this.startText.getFirstAlive()){return}

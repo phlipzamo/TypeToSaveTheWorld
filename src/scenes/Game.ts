@@ -6,15 +6,19 @@ import { SPEED } from '../myObjects/Speed';
 export class Game extends Scene
 {
     camera: Phaser.Cameras.Scene2D.Camera;
-    msg_text : Phaser.GameObjects.Text;
     aGrid: AlignGrid;
-    astroid: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
     typeableAstroid: TypeableAstroid;
     words:string[]
     groupOfAstroids: Phaser.GameObjects.Group;
     earth: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
     lettersInUse:string[]
     kills: number;
+    startTime: number;
+    numOfKeyPressed:number;
+    numOfRightKeyPressed:number;
+    endTime: number;
+    newIndex: number;
+    lastIndex: number;
     constructor ()
     {
         super('Game');
@@ -22,19 +26,28 @@ export class Game extends Scene
 
     create ()
     {
-        this.aGrid = new AlignGrid(this, 5,5);
+        this.numOfRightKeyPressed=0;
+        this.numOfKeyPressed=0;
+        this.startTime = 0;
+        this.endTime =0;
+        this.aGrid = new AlignGrid(this, 5,15);
+        //this.aGrid.showNumbers();
         this.camera = this.cameras.main;
         this.camera.setBackgroundColor(0x000000);
         this.createAndPlaceEarth()
         this.kills = 0;
         this.createAnimations();
         this.groupOfAstroids = this.add.group();
-        this.words = this.cache.json.get("twoLetterWords");
+        this.words = this.cache.json.get("words");
         this.lettersInUse=[];
         this.addNewTypeableAstroidToScene();
         //TODO Clean this up, make a it clear what you are doing
         if(!this.input.keyboard){return}
         this.input.keyboard.on('keydown', (keyPressed:any) => {
+            this.numOfKeyPressed++;
+            if(this.startTime===0){
+                this.startTime = Date.now();
+            }
             const typeableAstroid = <TypeableAstroid> this.groupOfAstroids.getChildren()
                 .find((child)=>{
                     var typeableAstroid:TypeableAstroid= <TypeableAstroid> child;
@@ -44,6 +57,7 @@ export class Game extends Scene
             if(typeableAstroid){
                 if(!typeableAstroid.typeableText.getFirstAlive()){return}
                 if(typeableAstroid.typeableText.getFirstAlive().text===keyPressed.key){
+                    this.numOfRightKeyPressed++;
                     typeableAstroid.typeableText.getFirstAlive().setTyped(true);
                     if(!typeableAstroid.typeableText.getFirstAlive()){
                         this.removeAstroid(typeableAstroid)
@@ -73,14 +87,14 @@ export class Game extends Scene
                
     }
     update() {
-        this.groupOfAstroids.getChildren().forEach((child)=>{
+       this.groupOfAstroids.getChildren().forEach((child)=>{
             var typeableAstroid:TypeableAstroid= <TypeableAstroid> child;
            typeableAstroid.moveDown();
         });
     }
     createAndPlaceEarth(){
         this.earth = this.physics.add.sprite(0, 0, 'earth');
-        this.aGrid.placeAtIndex(22, this.earth);
+        this.aGrid.placeAtIndex(67, this.earth);
         this.earth.setScale(19);
 
         this.earth.body.setCircle(30,1,4);
@@ -137,13 +151,40 @@ export class Game extends Scene
         return newWord;
     }
     addNewTypeableAstroidToScene(){
+        //check if placing in same col as last astroid
+        if(!this.lastIndex){
+            this.lastIndex = this.getRandomNumber(1,14);
+        }
+        do{
+            this.newIndex = this.getRandomNumber(1,14);
+        }while(this.lastIndex===this.newIndex)
+        this.lastIndex = this.newIndex;
+
         //add word
-        var newTypeableAstroid:TypeableAstroid = this.createAndPlaceTypeableAstroid(this.findNewWord(), this.getRandomNumber(0,5), SPEED.SLOW);
+        var newTypeableAstroid:TypeableAstroid = this.createAndPlaceTypeableAstroid(this.findNewWord(), this.newIndex, SPEED.SLOW);
         this.groupOfAstroids.add(newTypeableAstroid);
         this.physics.add.overlap(newTypeableAstroid.astroid, this.earth, () =>
-            {
-                this.scene.start('GameOver');
+            {   
+               this.gameOver();
             }
         );
     }
+    gameOver(){
+        this.calcTimeAndWPMAndStore();
+        this.scene.start('GameOver');
+    }
+    calcTimeAndWPMAndStore(){
+        if(this.startTime!=0){
+            this.endTime = Date.now();
+        }
+        var totalTimeinMin = ((this.endTime-this.startTime)/1000)/60;
+        if(totalTimeinMin===0){
+            totalTimeinMin = 1;
+        }
+        localStorage.setItem("time", 'Total Time(min): '+totalTimeinMin);
+
+        var grossWPM = (this.numOfRightKeyPressed/5)/totalTimeinMin;
+        localStorage.setItem("wpm", "WPM: "+Math.round(grossWPM));
+    }
+    
 }
