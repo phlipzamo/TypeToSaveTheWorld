@@ -11,7 +11,7 @@ export class Letter extends Phaser.GameObjects.Text {
     }
     setTyped(bool:boolean){
       this.setActive(!bool);
-      bool?this.setColor("#808080"):this.setColor("#fff");
+      bool?this.setColor("#AAFF00"):this.setColor("#fff");
       
     }
   }
