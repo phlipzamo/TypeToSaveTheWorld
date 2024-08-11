@@ -1,5 +1,6 @@
 import { Scene } from 'phaser';
 import { AlignGrid } from '../common/util/AlignGrid';
+import { AssetText } from '../myObjects/AssetText';
 
 export class GameOver extends Scene
 {
@@ -9,6 +10,7 @@ export class GameOver extends Scene
     aGrid: AlignGrid;
     timeText: Phaser.GameObjects.Text;
     wpmText: Phaser.GameObjects.Text;
+    waterTag: AssetText;
 
     constructor ()
     {
@@ -44,7 +46,7 @@ export class GameOver extends Scene
         });
         this.aGrid.placeAtIndex(16,this.timeText);
         this.gameover_text.setOrigin(0.5);
-
+        this.waterTag = new AssetText(this);
         //this.aGrid.showNumbers();
         this.input.once('pointerdown', () => {
 

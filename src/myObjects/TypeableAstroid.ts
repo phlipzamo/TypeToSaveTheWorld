@@ -39,4 +39,8 @@ export class TypeableAstroid extends Phaser.GameObjects.GameObject{
         this.astroid.setVisible(bool);
         this.typeableText.setVisible(bool);
     }
+    reset(){
+        this.typeableText.reset();
+        this.setBeingTyped(false);
+    }
 }

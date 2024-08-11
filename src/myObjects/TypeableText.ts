@@ -82,6 +82,12 @@ export class TypeableText extends Phaser.GameObjects.Group{
     typeNextLetter(bool:boolean){
         this.getFirstAlive().setTyped(bool);
     }
+    reset(){
+        this.getChildren().forEach((child)=>{
+            var letter:Letter = <Letter> child;
+            letter.setTyped(false);
+        })
+    }
     
     
     

@@ -2,6 +2,7 @@ import { Scene } from 'phaser';
 import { AlignGrid } from '../common/util/AlignGrid';
 import { TypeableAstroid } from '../myObjects/TypeableAstroid';
 import { SPEED } from '../myObjects/Speed';
+import { AssetText } from '../myObjects/AssetText';
 
 export class Game extends Scene
 {
@@ -12,13 +13,14 @@ export class Game extends Scene
     groupOfAstroids: Phaser.GameObjects.Group;
     earth: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
     lettersInUse:string[]
-    kills: number;
+    destroyed: number;
     startTime: number;
     numOfKeyPressed:number;
     numOfRightKeyPressed:number;
     endTime: number;
     newIndex: number;
     lastIndex: number;
+    waterTag: AssetText;
     constructor ()
     {
         super('Game');
@@ -30,7 +32,7 @@ export class Game extends Scene
         this.numOfKeyPressed=0;
         this.startTime = 0;
         this.endTime =0;
-        this.kills = 0;
+        this.destroyed = 0;
         this.groupOfAstroids = this.add.group();
         this.aGrid = new AlignGrid(this, 5,15);
         this.camera = this.cameras.main;
@@ -40,6 +42,7 @@ export class Game extends Scene
         this.words = this.cache.json.get("words");
         this.lettersInUse=[];
         this.addNewTypeableAstroidToScene();
+        this.waterTag = new AssetText(this);
 
         if(!this.input.keyboard){return}
         this.input.keyboard.on('keydown', (keyPressed:any) => {
@@ -60,12 +63,12 @@ export class Game extends Scene
                     astroidBeingTyped.typeableText.typeNextLetter(true);
                     //check if that was the last letter
                     if(!astroidBeingTyped.typeableText.hasUntypedLetters()){
-                        this.kills++
+                        this.destroyed++
                         this.removeAstroid(astroidBeingTyped)
                         this.addNewTypeableAstroidToScene();
-                        if(this.kills===30){
+                        if(this.destroyed===30){
                             this.increaseDifficulty();
-                            this.kills=0;
+                            this.destroyed=0;
                         }
                     }
                 }
