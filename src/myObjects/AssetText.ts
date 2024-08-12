@@ -1,4 +1,5 @@
 import { Scene } from "phaser";
+import { Align } from "../common/util/align";
 
 export class AssetText extends Phaser.GameObjects.Text{
     constructor(scene:Scene){
@@ -9,8 +10,7 @@ export class AssetText extends Phaser.GameObjects.Text{
             strokeThickness: 4,
             fontFamily: "Lucida Handwriting",
         });
-        this.setOrigin(1,1);
-        this.setPosition(Number(scene.game.config.width), Number(scene.game.config.height));
+        Align.alignToLBottomRight(this,scene);
         scene.add.existing(this);
     }
 }

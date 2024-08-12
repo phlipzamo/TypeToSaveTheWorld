@@ -1,19 +1,19 @@
 import { Scene } from 'phaser';
 import { AlignGrid } from '../common/util/AlignGrid';
 import { TypeableAstroid } from '../myObjects/TypeableAstroid';
-import { SPEED } from '../myObjects/Speed';
+import { DIFFICULTY, SPEED } from '../myObjects/Speed';
 import { AssetText } from '../myObjects/AssetText';
-
+import { Score } from '../myObjects/Score';
+import { Align } from '../common/util/align';
 export class Game extends Scene
 {
     camera: Phaser.Cameras.Scene2D.Camera;
     aGrid: AlignGrid;
     typeableAstroid: TypeableAstroid;
-    words:string[]
+    
     groupOfAstroids: Phaser.GameObjects.Group;
     earth: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
-    lettersInUse:string[]
-    destroyed: number;
+    lettersInUse:string[];
     startTime: number;
     numOfKeyPressed:number;
     numOfRightKeyPressed:number;
@@ -21,29 +21,77 @@ export class Game extends Scene
     newIndex: number;
     lastIndex: number;
     waterTag: AssetText;
+    astroidsLeftText: Score;
+    uiOverlay: Phaser.GameObjects.Group;
+    uiGrid: AlignGrid;
+    threeLetterPercentage: number;
+    fourLetterPercentage: number;
+    fiveLetterPercentage: number;
+    wordsInJson: any;
+    waveWords: DIFFICULTY[];
+    intervalOfAdding: number;
+    numOfStartAstroids: number;
+    numOfEasyWords: number;
+    numOfMedWords: number;
+    numOfLongWord: number;
+    counter: number;
+    startDifficulty: string;
+    wpmText: Phaser.GameObjects.Text;
     constructor ()
     {
         super('Game');
     }
-
+    init(data: { difficulty: string; }) {
+        this.startDifficulty=data.difficulty;
+    }
     create ()
-    {
+    { 
+        this.threeLetterPercentage=90;
+        this.fourLetterPercentage=5;
+        this.fiveLetterPercentage=0;
         this.numOfRightKeyPressed=0;
         this.numOfKeyPressed=0;
         this.startTime = 0;
         this.endTime =0;
-        this.destroyed = 0;
         this.groupOfAstroids = this.add.group();
         this.aGrid = new AlignGrid(this, 5,15);
         this.camera = this.cameras.main;
         this.camera.setBackgroundColor(0x000000);
-        this.createAndPlaceEarth(67)
+        this.createAndPlaceEarth(67);
+        this.astroidsLeftText = new Score(this, "Astroids Left:");
         this.createAnimations();
-        this.words = this.cache.json.get("words");
+        this.wordsInJson = this.cache.json.get("words");
         this.lettersInUse=[];
-        this.addNewTypeableAstroidToScene();
+        this.waveWords = [];
+        this.numOfStartAstroids = 0
+        this.intervalOfAdding = 0;
+        this.numOfEasyWords = 0;
+        this.numOfMedWords = 0;
+        this.numOfLongWord = 0;
+        switch (this.startDifficulty) {
+            case "easy":
+                this.levelUp(1,7,18,5,0);
+                break;
+            case "medium":
+                this.levelUp(3,7,18,20,5);
+                break;
+            case "hard":
+                this.levelUp(5,7,18,35,10);
+                break;
+            default:
+                this.levelUp(1,7,18,5,0);
+                break;
+        }
+        
+        this.counter=0;
+        //this.addNewTypeableAstroidToScene();
         this.waterTag = new AssetText(this);
-
+        
+        
+        this.createSuccessScreen()
+        Align.alignToTopRight(this.astroidsLeftText,this);
+        
+        
         if(!this.input.keyboard){return}
         this.input.keyboard.on('keydown', (keyPressed:any) => {
             //startTime if hasnt been started
@@ -63,12 +111,23 @@ export class Game extends Scene
                     astroidBeingTyped.typeableText.typeNextLetter(true);
                     //check if that was the last letter
                     if(!astroidBeingTyped.typeableText.hasUntypedLetters()){
-                        this.destroyed++
+                        this.astroidsLeftText.downScore(1);
                         this.removeAstroid(astroidBeingTyped)
+                        if(this.astroidsLeftText.getScore()===0){
+                            this.uiOverlay.setVisible(true); 
+                            this.calcTimeAndWPMAndStore();
+                            this.setWpmText();
+                            this.counter =0;
+                            this.startTime=0;
+                            this.endTime=0;
+                            this.numOfRightKeyPressed = 0;
+                            return; 
+                        }
+                        this.counter++;
                         this.addNewTypeableAstroidToScene();
-                        if(this.destroyed===30){
-                            this.increaseDifficulty();
-                            this.destroyed=0;
+                        if(this.intervalOfAdding ===this.counter){
+                            this.counter=0;
+                            this.addNewTypeableAstroidToScene()
                         }
                     }
                 }
@@ -127,8 +186,26 @@ export class Game extends Scene
         return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); 
         // The maximum is exclusive and the minimum is inclusive  
     }
-    increaseDifficulty(){
-        this.addNewTypeableAstroidToScene();
+    levelUp(startAstroidsIncrease: number, intervalIncrease:number, easyWordsIncrease:number, mediumWordsIncrease: number, hardWordsIncrease:number){
+        this.waveWords =[];
+        this.numOfStartAstroids+=startAstroidsIncrease;
+        this.intervalOfAdding+=intervalIncrease;
+        this.numOfEasyWords +=easyWordsIncrease
+        this.numOfMedWords += mediumWordsIncrease;
+        this.numOfLongWord += hardWordsIncrease;
+        this.astroidsLeftText.setScore(this.numOfEasyWords+this.numOfMedWords+this.numOfLongWord);
+        for (let index = 0; index < this.numOfEasyWords; index++) {
+            this.waveWords.push(DIFFICULTY.EASY);
+        }
+        for (let index = 0; index < this.numOfMedWords; index++) {
+            this.waveWords.push(DIFFICULTY.MEDIUM);   
+        }
+        for (let index = 0; index < this.numOfLongWord; index++) {
+            this.waveWords.push(DIFFICULTY.HARD);  
+        }
+        for (let index = 0; index <  this.numOfStartAstroids; index++) {
+            this.addNewTypeableAstroidToScene();
+        } 
     }
     removeAstroid(typeableAstroid:TypeableAstroid){
 
@@ -141,17 +218,34 @@ export class Game extends Scene
         typeableAstroid.setVisible(false);
         typeableAstroid.destroy(false);
     }
-    findNewWord():string{
+    findNewWord(difficulty:DIFFICULTY):string{
         //look for new word with different starting letter than the other words in scene
         var newWord:string
+        var words:string[]
+       switch (difficulty) {
+        case DIFFICULTY.EASY:
+            words = this.wordsInJson.easyWords;
+            break;
+        case DIFFICULTY.MEDIUM:
+            words = this.wordsInJson.mediumWords;
+            break;
+        case DIFFICULTY.HARD:
+            words = this.wordsInJson.hardWords;
+            break;
+        default:
+            words=[]
+            break;
+       }
         do{
-            newWord = this.words[this.getRandomNumber(0,this.words.length)].toLowerCase();
+            newWord = words[this.getRandomNumber(0,words.length)].toLowerCase();
         }
         while(this.lettersInUse.find(item => item === newWord[0]))
         this.lettersInUse.push(newWord[0]);
         return newWord;
     }
     addNewTypeableAstroidToScene(){
+        var difficulty = this.removeRandomElement(this.waveWords);
+        if(!difficulty){return};
         //check if placing in same col or adjacent col as last astroid
         if(!this.lastIndex){
             this.lastIndex = this.getRandomNumber(1,14);
@@ -161,13 +255,33 @@ export class Game extends Scene
         }while(Math.abs(this.lastIndex-this.newIndex)<=1)
         this.lastIndex = this.newIndex;
         //add word
-        var newTypeableAstroid:TypeableAstroid = this.createAndPlaceTypeableAstroid(this.findNewWord(), this.newIndex, SPEED.SLOW);
+        var newTypeableAstroid:TypeableAstroid = this.createAndPlaceTypeableAstroid(this.findNewWord(difficulty), this.newIndex, this.difficultyToSpeed(difficulty));
         this.groupOfAstroids.add(newTypeableAstroid);
         this.physics.add.overlap(newTypeableAstroid.astroid, this.earth, () =>
             {   
                this.gameOver();
             }
         );
+    }
+    difficultyToSpeed(difficulty:DIFFICULTY){
+        switch (difficulty) {
+            case DIFFICULTY.EASY:
+                return SPEED.FAST;
+            case DIFFICULTY.MEDIUM:
+                return SPEED.MEDIUM;
+            case DIFFICULTY.HARD:
+                return SPEED.SLOW;
+            default:
+                return SPEED.SLOW;
+           }
+    }
+    removeRandomElement(array: DIFFICULTY[]): DIFFICULTY | undefined {
+        if (array.length === 0) return undefined; // Handle the case of an empty array
+        // Generate a random index
+        const randomIndex = Math.floor(Math.random() * array.length);
+    
+        // Remove the element at the random index
+        return array.splice(randomIndex, 1)[0]; // splice() returns an array of removed elements
     }
     gameOver(){
         this.calcTimeAndWPMAndStore();
@@ -184,6 +298,7 @@ export class Game extends Scene
         var grossWPM = (this.numOfRightKeyPressed/5)/(this.millisecondsToMin(totalTimeInMilliseconds));
         localStorage.setItem("wpm", "WPM: "+Math.round(grossWPM));
     }
+  
     millisecondsToFormattedMinString(milliseconds:number) {
         const seconds = milliseconds/1000
         const minutes = Math.floor(seconds / 60);
@@ -194,6 +309,43 @@ export class Game extends Scene
     millisecondsToMin(milliseconds:number){
         return ((milliseconds/1000)/60);
     }
-    
+    createSuccessScreen(){
+        this.uiGrid = new AlignGrid(this,9,3);
+        //this.uiGrid.showNumbers();
+        this.uiOverlay = this.add.group();
+        var txt_Sucess =this.add.text(0,0, "W A V E    S U R V I V E D",{fontFamily: "Arial Black", fontSize: 50, color:"#FFFFFF", stroke: "#05ed04", strokeThickness: 8 });
+        txt_Sucess.setOrigin(0.5);
+        this.uiGrid.placeAtIndex(7, txt_Sucess);
+        txt_Sucess.setDepth(30);
+        this.wpmText = this.add.text(0,0, "WPM: ",{fontSize: 40, color:"#FFFFFF", stroke: "#05ed04", strokeThickness: 4 })
+        .setOrigin(.5);
+        this.uiGrid.placeAtIndex(13, this.wpmText);
+        var nextLevelButton =this.add.text(0,0, "Next Level?",{fontSize: 40, color:"#FFFFFF", stroke: "#05ed04", strokeThickness: 4 })
+        .setInteractive()
+        .on('pointerdown', () => {
+            this.uiOverlay.setVisible(false);
+            if((this.numOfEasyWords+this.numOfMedWords+this.numOfLongWord)%2===0){
+                this.levelUp(1,0,0,2,1);
+            }
+            else{
+                this.levelUp(0,0,0,2,1);
+            }
+        })
+        .on('pointerover', () => this.changeColor(nextLevelButton,"#FF0000") )
+        .on('pointerout', () => this.changeColor(nextLevelButton,"#05ed04") );
+        nextLevelButton.setOrigin(0.5);
+        this.uiGrid.placeAtIndex(16, nextLevelButton);
+        nextLevelButton.setDepth(30);
+        this.uiOverlay.add(txt_Sucess);
+        this.uiOverlay.add(this.wpmText);
+        this.uiOverlay.add(nextLevelButton);
+        this.uiOverlay.setVisible(false);
+    }
+    setWpmText(){
+        this.wpmText.setText(localStorage.getItem("wpm")||"");
+    }
+    changeColor(text:Phaser.GameObjects.Text, color:string){
+        text.setStroke(color,4);
+    }
     
 }

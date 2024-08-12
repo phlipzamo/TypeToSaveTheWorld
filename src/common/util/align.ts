@@ -43,19 +43,20 @@ export class Align {
         image.setScale(scale);
     }
     static alignToTopLeft(obj:Phaser.GameObjects.Image|Phaser.GameObjects.Sprite|Phaser.GameObjects.Text|Phaser.Physics.Arcade.Sprite) {
-        obj.x = obj.displayWidth / 2;
-        obj.y = obj.displayHeight / 2;
+       obj.setOrigin(0,0);
+       obj.setPosition(0, 0);
     }
     static alignToTopRight(obj:Phaser.GameObjects.Image|Phaser.GameObjects.Sprite|Phaser.GameObjects.Text|Phaser.Physics.Arcade.Sprite,scene:Phaser.Scene) {
-        obj.x = Number(scene.sys.game.config.width) - obj.displayWidth / 2;
-        obj.y = obj.displayHeight / 2;
+        obj.setOrigin(1,0);
+        obj.setPosition(Number(scene.game.config.width), 0);
     }
     static alignToLBottomLeft(obj:Phaser.GameObjects.Image|Phaser.GameObjects.Sprite|Phaser.GameObjects.Text|Phaser.Physics.Arcade.Sprite,scene:Phaser.Scene) {
-        obj.x = obj.displayWidth / 2;
-        obj.y = Number(scene.sys.game.config.height) - obj.displayHeight / 2;
-    }
+        obj.setOrigin(0,1);
+        obj.setPosition(0, Number(scene.game.config.height));
+        }
     static alignToLBottomRight(obj:Phaser.GameObjects.Image|Phaser.GameObjects.Sprite|Phaser.GameObjects.Text|Phaser.Physics.Arcade.Sprite,scene:Phaser.Scene) {
-        obj.x = Number(scene.game.config.width) - obj.displayWidth / 2;
-        obj.y = Number(scene.game.config.height) - obj.displayHeight / 2;
+        obj.setOrigin(1,1);
+        obj.setPosition(Number(scene.game.config.width), Number(scene.game.config.height));
+        
     }
 }

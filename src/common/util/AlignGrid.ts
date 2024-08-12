@@ -6,8 +6,6 @@ export class AlignGrid {
     
     cw:number;
     ch: number;
-    startX:number;
-    startY: number;
     graphics: Phaser.GameObjects.Graphics;
     width: number;
     height: number;
@@ -22,9 +20,6 @@ export class AlignGrid {
         this.cw = this.width / cols;
         //cell height
         this.ch = this.height / rows;
-
-        this.startX = 0;
-        this.startY = 0;  
     }
     show() {
         
@@ -34,27 +29,27 @@ export class AlignGrid {
         this.graphics = this.scene.add.graphics();
         this.graphics.lineStyle(2, 0xff0000);
         for (var i = 0; i < this.width; i += this.cw) {
-            this.graphics.moveTo(this.startX + i, this.startY);
-            this.graphics.lineTo(this.startX + i, this.startY + this.height);
+            this.graphics.moveTo(i, 0);
+            this.graphics.lineTo(i, this.height);
         }
         for (var i = 0; i < this.height; i += this.ch) {
-            this.graphics.moveTo(this.startX, this.startY + i);
-            this.graphics.lineTo(this.startX + this.width, this.startY + i);
+            this.graphics.moveTo(0, i);
+            this.graphics.lineTo(this.width, i);
         }
         this.graphics.strokePath();
         return this.graphics;
     }
     placeAt(xx:number, yy:number, obj:any) {
         //calc position based upon the cellwidth and cellheight
-        var x2 = this.startX + this.cw * xx + this.cw / 2;
-        var y2 = this.startY + this.ch * yy + this.ch / 2;
+        var x2 = this.cw * xx + this.cw / 2;
+        var y2 = this.ch * yy + this.ch / 2;
         obj.x = x2;
         obj.y = y2;
-        return {x:x2,y:y2,sx:this.startX,sy:this.startY};
+        return {x:x2,y:y2};
     }
     placeAtIndex(index:number, obj:any) {
-        var yy = Math.floor(index / this.cols);
-        var xx = index - (yy * this.cols);
+        var yy = Math.floor(index / this.cols)
+        var xx = index - (yy * this.cols)
        return this.placeAt(xx, yy, obj);
     }
     placeTypeableTextAtIndex(index:number,typeableText:TypeableText){

@@ -5,7 +5,7 @@ export class Score extends Phaser.GameObjects.Text{
     score: number
     constructor(scene:Scene, scoreTitle:string){
         super(scene,0,0,"",{
-            fontSize: 15,
+            fontSize: 25,
             color: '#fff',
             stroke: '#000',
             strokeThickness: 4,
@@ -13,6 +13,7 @@ export class Score extends Phaser.GameObjects.Text{
         this.scoreText = scoreTitle+" ";
         this.score = 0;
         this.setText(this.scoreText + this.score);
+        scene.add.existing(this);
     }
     upScore(points:number){
         this.score+=points;

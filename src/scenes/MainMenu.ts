@@ -2,6 +2,8 @@ import { Scene, GameObjects } from 'phaser';
 import { AlignGrid } from '../common/util/AlignGrid';
 import { AssetText } from '../myObjects/AssetText';
 import { TypeableAstroid } from '../myObjects/TypeableAstroid';
+import { SPEED } from '../myObjects/Speed';
+
 export class MainMenu extends Scene
 {
     background: GameObjects.Image;
@@ -32,6 +34,7 @@ export class MainMenu extends Scene
         //handles the typing interaction
         this.createKeyboardTypingHandler();
         //this.aGrid.showNumbers()
+        
         this.waterTag = new AssetText(this);
     }
     update(time:any){
@@ -55,7 +58,8 @@ export class MainMenu extends Scene
                     astroidBeingTyped.typeableText.typeNextLetter(true);
                     //check if that was the last letter
                     if(!astroidBeingTyped.typeableText.hasUntypedLetters()){
-                        this.scene.start('Game');
+                        this.scene.stop('MainMenu')
+                        this.scene.start('Game', {difficulty: astroidBeingTyped.typeableText.getWord()});
                     }
                 }
                 else{
@@ -88,7 +92,7 @@ export class MainMenu extends Scene
         });
     }
     createAndPlaceTypeableAstroid(title: string, gridIndex: number){
-        var typeableAstroid = new TypeableAstroid(this, 0,0,title,30,1)
+        var typeableAstroid = new TypeableAstroid(this, 0,0,title,30,SPEED.SLOW)
         var indexPos = this.aGrid.getPosByIndex(gridIndex);
         typeableAstroid.move(indexPos.x, indexPos.y);
         return typeableAstroid;

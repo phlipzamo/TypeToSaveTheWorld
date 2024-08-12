@@ -88,7 +88,14 @@ export class TypeableText extends Phaser.GameObjects.Group{
             letter.setTyped(false);
         })
     }
-    
+    getWord(){
+        var word:string="";
+        this.getChildren().forEach(child => {
+            var letter = <Letter> child;
+            word+=letter.text; 
+        });
+        return word;
+    }
     
     
 }
