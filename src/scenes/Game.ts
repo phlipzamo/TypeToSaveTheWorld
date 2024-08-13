@@ -37,6 +37,7 @@ export class Game extends Scene
     counter: number;
     startDifficulty: string;
     wpmText: Phaser.GameObjects.Text;
+    accuracyText: Phaser.GameObjects.Text;
     constructor ()
     {
         super('Game');
@@ -94,6 +95,7 @@ export class Game extends Scene
         
         if(!this.input.keyboard){return}
         this.input.keyboard.on('keydown', (keyPressed:any) => {
+            this.numOfKeyPressed++;
             //startTime if hasnt been started
             if(this.startTime===0){this.startTime = Date.now();}
 
@@ -117,10 +119,12 @@ export class Game extends Scene
                             this.uiOverlay.setVisible(true); 
                             this.calcTimeAndWPMAndStore();
                             this.setWpmText();
+                            this.setAccuracyText();
                             this.counter =0;
                             this.startTime=0;
                             this.endTime=0;
                             this.numOfRightKeyPressed = 0;
+                            this.numOfKeyPressed =0;
                             return; 
                         }
                         this.counter++;
@@ -141,6 +145,7 @@ export class Game extends Scene
                     }
                 );
                 if(astroidToStartTyping){
+                    this.numOfRightKeyPressed++;
                     astroidToStartTyping.typeableText.typeNextLetter(true);
                     astroidToStartTyping.setBeingTyped(true);
                 }     
@@ -320,6 +325,9 @@ export class Game extends Scene
         this.wpmText = this.add.text(0,0, "WPM: ",{fontSize: 40, color:"#FFFFFF", stroke: "#05ed04", strokeThickness: 4 })
         .setOrigin(.5);
         this.uiGrid.placeAtIndex(13, this.wpmText);
+        this.accuracyText = this.add.text(0,0, "Accuracy: ",{fontSize: 40, color:"#FFFFFF", stroke: "#05ed04", strokeThickness: 4 })
+        .setOrigin(.5);
+        this.uiGrid.placeAtIndex(16, this.accuracyText);
         var nextLevelButton =this.add.text(0,0, "Next Level?",{fontSize: 40, color:"#FFFFFF", stroke: "#05ed04", strokeThickness: 4 })
         .setInteractive()
         .on('pointerdown', () => {
@@ -334,15 +342,19 @@ export class Game extends Scene
         .on('pointerover', () => this.changeColor(nextLevelButton,"#FF0000") )
         .on('pointerout', () => this.changeColor(nextLevelButton,"#05ed04") );
         nextLevelButton.setOrigin(0.5);
-        this.uiGrid.placeAtIndex(16, nextLevelButton);
+        this.uiGrid.placeAtIndex(19, nextLevelButton);
         nextLevelButton.setDepth(30);
         this.uiOverlay.add(txt_Sucess);
         this.uiOverlay.add(this.wpmText);
+        this.uiOverlay.add(this.accuracyText);
         this.uiOverlay.add(nextLevelButton);
         this.uiOverlay.setVisible(false);
     }
     setWpmText(){
         this.wpmText.setText(localStorage.getItem("wpm")||"");
+    }
+    setAccuracyText(){
+        this.accuracyText.setText("Accuracy: "+String(Math.round(this.numOfRightKeyPressed/this.numOfKeyPressed*100))+"%");
     }
     changeColor(text:Phaser.GameObjects.Text, color:string){
         text.setStroke(color,4);
