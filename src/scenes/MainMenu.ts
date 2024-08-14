@@ -34,7 +34,7 @@ export class MainMenu extends Scene
         //handles the typing interaction
         this.createKeyboardTypingHandler();
         //this.aGrid.showNumbers()
-        
+        this.createAnimations();
         this.waterTag = new AssetText(this);
     }
     update(time:any){
@@ -58,8 +58,11 @@ export class MainMenu extends Scene
                     astroidBeingTyped.typeableText.typeNextLetter(true);
                     //check if that was the last letter
                     if(!astroidBeingTyped.typeableText.hasUntypedLetters()){
-                        this.scene.stop('MainMenu')
-                        this.scene.start('Game', {difficulty: astroidBeingTyped.typeableText.getWord()});
+                        astroidBeingTyped.astroid.play("Explode");
+                        astroidBeingTyped.astroid.on(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY+"Explode",  () => {
+                            this.scene.stop('MainMenu')
+                            this.scene.start('Game', {difficulty: astroidBeingTyped.typeableText.getWord()});
+                        }, this);
                     }
                 }
                 else{
@@ -91,6 +94,7 @@ export class MainMenu extends Scene
             }
         });
     }
+    
     createAndPlaceTypeableAstroid(title: string, gridIndex: number){
         var typeableAstroid = new TypeableAstroid(this, 0,0,title,30,SPEED.SLOW)
         var indexPos = this.aGrid.getPosByIndex(gridIndex);
@@ -109,6 +113,20 @@ export class MainMenu extends Scene
         this.earth = this.add.sprite(0, 0, 'earth');
         this.earth.setScale(10);
         this.aGrid.placeAtIndex(gridIndex, this.earth);
+    }
+    createAnimations(){
+        this.anims.create({
+            key: 'stop',
+            frames: this.anims.generateFrameNames('astroid', {start: 1, end: 1, zeroPad: 1, prefix: 'A', suffix: '.png'}),
+            frameRate: 8,
+            repeat: 0
+        });
+        this.anims.create({
+            key: 'Explode',
+            frames: this.anims.generateFrameNames('astroid', {start: 1, end: 13, zeroPad: 1, prefix: 'A', suffix: '.png'}),
+            frameRate: 40,
+            repeat: 0
+        });
     }
 
 }

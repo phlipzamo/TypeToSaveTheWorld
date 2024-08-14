@@ -114,7 +114,11 @@ export class Game extends Scene
                     //check if that was the last letter
                     if(!astroidBeingTyped.typeableText.hasUntypedLetters()){
                         this.astroidsLeftText.downScore(1);
-                        this.removeAstroid(astroidBeingTyped)
+                        astroidBeingTyped.astroid.play("Explode");
+                        astroidBeingTyped.destroy(false);
+                        astroidBeingTyped.astroid.on(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY+"Explode",  () => {
+                            this.removeAstroid(astroidBeingTyped);
+                        }, this);
                         if(this.astroidsLeftText.getScore()===0){
                             this.uiOverlay.setVisible(true); 
                             this.calcTimeAndWPMAndStore();
@@ -221,7 +225,7 @@ export class Game extends Scene
         }
 
         typeableAstroid.setVisible(false);
-        typeableAstroid.destroy(false);
+        
     }
     findNewWord(difficulty:DIFFICULTY):string{
         //look for new word with different starting letter than the other words in scene
