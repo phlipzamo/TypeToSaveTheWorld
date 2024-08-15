@@ -8,12 +8,13 @@ export class MainMenu extends Scene
 {
     background: GameObjects.Image;
     title: GameObjects.Text;
-    aGrid:AlignGrid
-    
+    aGrid:AlignGrid;
     earth: GameObjects.Image;
     waterTag: AssetText;
     groupOfAstroids: GameObjects.Group;
     startText: TypeableAstroid;
+    ufo: GameObjects.Sprite;
+    target: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
     constructor ()
     {
         super('MainMenu');
@@ -22,11 +23,14 @@ export class MainMenu extends Scene
     create ()
     {
         //grid to place objs, creates a 5x5 grid Left to right increasing starts at 0
-        this.aGrid = new AlignGrid(this, 5,5)
+        this.aGrid = new AlignGrid(this, 5,5);
+        //this.aGrid.showNumbers();
         //following line will show the grid with indexes
         this.groupOfAstroids = this.add.group();
         this.background = this.add.image(512, 384, 'background');
         this.createAndPlaceEarthSprite(12)
+        this.ufo = this.add.sprite(0, 0, 'ufo');
+        this.aGrid.placeAtIndex(22,this.ufo);
         this.createAndPlaceTitle("TYPE TO SAVE THE WORLD", 7)
         this.groupOfAstroids.add(this.createAndPlaceTypeableAstroid("easy",16));
         this.groupOfAstroids.add(this.createAndPlaceTypeableAstroid("medium",17));
@@ -41,6 +45,18 @@ export class MainMenu extends Scene
         //spin and bounce earth
         this.earth.rotation += 0.005;
         this.earth.y = this.earth.y + Math.sin(time / 1000 * 2)
+        if(this.target){
+            var change = 30;
+            if(Math.abs(this.target.x-this.ufo.x)<15){
+                change = 1;
+            }
+            if(this.target.x > this.ufo.x){
+                this.ufo.x +=change;
+            }
+            else if(this.target.x < this.ufo.x){
+                this.ufo.x -=change;
+            }
+        }
     }
     createKeyboardTypingHandler(){
         if(!this.input.keyboard){return}
@@ -55,6 +71,7 @@ export class MainMenu extends Scene
             if(astroidBeingTyped){
                 if(!astroidBeingTyped.typeableText.hasUntypedLetters()){return}
                 if(astroidBeingTyped.typeableText.isNextUntypedLetter(keyPressed.key)){
+                    this.target = astroidBeingTyped.astroid;
                     astroidBeingTyped.typeableText.typeNextLetter(true);
                     //check if that was the last letter
                     if(!astroidBeingTyped.typeableText.hasUntypedLetters()){
@@ -73,6 +90,7 @@ export class MainMenu extends Scene
                     }
                     );
                     if(astroidToStartTyping){
+                        this.target = astroidToStartTyping.astroid;
                         astroidBeingTyped.reset();
                         astroidToStartTyping.typeableText.typeNextLetter(true);
                         astroidToStartTyping.setBeingTyped(true);
@@ -88,6 +106,7 @@ export class MainMenu extends Scene
                     }
                 );
                 if(astroidToStartTyping){
+                    this.target = astroidToStartTyping.astroid;
                     astroidToStartTyping.typeableText.typeNextLetter(true);
                     astroidToStartTyping.setBeingTyped(true);
                 }     

@@ -15,6 +15,7 @@ export class Boot extends Scene
         this.load.image('earth', 'assets/Globe.png')
         this.load.atlas("astroid", "assets/astroid.png", "assets/astroid.json");
         this.load.json("words", "assets/words.json");
+        this.load.image('ufo',"assets/ufo.png");
     }
 
     create ()
