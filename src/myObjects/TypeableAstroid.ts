@@ -11,6 +11,7 @@ export class TypeableAstroid extends Phaser.GameObjects.GameObject{
     speed:number;
     
     constructor(scene:Phaser.Scene,x:number, y:number,text:string,fontsize:number, speed:SPEED){
+        
         super(scene, 'typeableAstroid');
         this.astroid = scene.physics.add.sprite(10,10,"astroid");
         this.astroid.body.setCircle(30,3,3);

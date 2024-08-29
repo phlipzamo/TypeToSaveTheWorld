@@ -3,6 +3,7 @@ import { AlignGrid } from '../common/util/AlignGrid';
 import { AssetText } from '../myObjects/AssetText';
 import { TypeableAstroid } from '../myObjects/TypeableAstroid';
 import { SPEED } from '../myObjects/Speed';
+import { Laser, Lasers } from '../myObjects/Lasers';
 
 export class MainMenu extends Scene
 {
@@ -14,7 +15,9 @@ export class MainMenu extends Scene
     groupOfAstroids: GameObjects.Group;
     startText: TypeableAstroid;
     ufo: GameObjects.Sprite;
-    target: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+    target: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody|undefined;
+    lasers: Lasers;
+    shoot: boolean;
     constructor ()
     {
         super('MainMenu');
@@ -22,6 +25,7 @@ export class MainMenu extends Scene
 
     create ()
     {
+        this.shoot = false;
         //grid to place objs, creates a 5x5 grid Left to right increasing starts at 0
         this.aGrid = new AlignGrid(this, 5,5);
         //this.aGrid.showNumbers();
@@ -32,6 +36,7 @@ export class MainMenu extends Scene
         this.ufo = this.add.sprite(0, 0, 'ufo');
         this.aGrid.placeAtIndex(22,this.ufo);
         this.createAndPlaceTitle("TYPE TO SAVE THE WORLD", 7)
+        this.lasers = new Lasers(this);
         this.groupOfAstroids.add(this.createAndPlaceTypeableAstroid("easy",16));
         this.groupOfAstroids.add(this.createAndPlaceTypeableAstroid("medium",17));
         this.groupOfAstroids.add(this.createAndPlaceTypeableAstroid("hard",18));
@@ -50,11 +55,16 @@ export class MainMenu extends Scene
             if(Math.abs(this.target.x-this.ufo.x)<15){
                 change = 1;
             }
+
             if(this.target.x > this.ufo.x){
                 this.ufo.x +=change;
             }
             else if(this.target.x < this.ufo.x){
                 this.ufo.x -=change;
+            }
+            if(Math.round(this.target.x) == Math.round(this.ufo.x) && this.shoot){
+                this.shoot = false;
+                this.lasers.fireLaser(this.ufo.x, this.ufo.y);
             }
         }
     }
@@ -75,11 +85,28 @@ export class MainMenu extends Scene
                     astroidBeingTyped.typeableText.typeNextLetter(true);
                     //check if that was the last letter
                     if(!astroidBeingTyped.typeableText.hasUntypedLetters()){
-                        astroidBeingTyped.astroid.play("Explode");
+                        //astroidBeingTyped.astroid.play("Explode");
+                        //this.physics.add.existing(astroidBeingTyped);
+                        this.shoot = true;
                         astroidBeingTyped.astroid.on(Phaser.Animations.Events.ANIMATION_COMPLETE_KEY+"Explode",  () => {
+                            this.target = undefined;
                             this.scene.stop('MainMenu')
                             this.scene.start('Game', {difficulty: astroidBeingTyped.typeableText.getWord()});
                         }, this);
+
+                        this.physics.add.overlap(this.lasers, astroidBeingTyped.astroid, (obj1, obj2) =>
+                            {
+                                //console.log(typeof(obj1));
+                                var laser = <Laser> obj2;
+                                laser.setActive(false);
+                                laser.setVisible(false);
+                                laser.body?.reset(0,0);
+                                laser.setY(-10);
+                                //console.log(obj1);
+                                var astroid = <Phaser.Types.Physics.Arcade.SpriteWithDynamicBody> obj1;
+                                //astroid.setImmovable(true);
+                                astroid.play("Explode");
+                            });
                     }
                 }
                 else{

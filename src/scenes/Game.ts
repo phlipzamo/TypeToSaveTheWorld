@@ -3,6 +3,7 @@ import { AlignGrid } from '../common/util/AlignGrid';
 import { TypeableAstroid } from '../myObjects/TypeableAstroid';
 import { DIFFICULTY, SPEED } from '../myObjects/Speed';
 import { AssetText } from '../myObjects/AssetText';
+import { Lasers } from '../myObjects/Lasers';
 import { Score } from '../myObjects/Score';
 import { Align } from '../common/util/align';
 export class Game extends Scene
@@ -38,6 +39,7 @@ export class Game extends Scene
     startDifficulty: string;
     wpmText: Phaser.GameObjects.Text;
     accuracyText: Phaser.GameObjects.Text;
+    lasers: Lasers;
     constructor ()
     {
         super('Game');
@@ -47,6 +49,7 @@ export class Game extends Scene
     }
     create ()
     { 
+        this.lasers = new Lasers(this);
         this.threeLetterPercentage=90;
         this.fourLetterPercentage=5;
         this.fiveLetterPercentage=0;
